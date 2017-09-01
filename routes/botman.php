@@ -1,5 +1,7 @@
 <?php
 use App\Http\Controllers\BotManController;
+use BotMan\BotMan\Messages\Attachments\Video;
+use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
 use BotMan\Drivers\Facebook\Extensions\ButtonTemplate;
 use BotMan\Drivers\Facebook\Extensions\Element;
 use BotMan\Drivers\Facebook\Extensions\ElementButton;
@@ -14,9 +16,17 @@ $botman = resolve('botman');
 
 $botman->hears('Hi', function($bot){
     $bot->reply(ButtonTemplate::create('Welcome to the Gaspedaal Bot. You can get started using the buttons below!')
-        ->addButton(ElementButton::create('Most popular brands')->type('postback')->payload('Most popular brands'))
+        ->addButton(ElementButton::create('Ik zoek een auto')->type('postback')->payload('search'))
         ->addButton(ElementButton::create('I have a problem')->type('postback')->payload('problem'))
         ->addButton(ElementButton::create('I am a dealer')->type('postback')->payload('dealer'))
+    );
+});
+
+$botman->hears('search', function($bot){
+    $bot->reply(ButtonTemplate::create('Welke?')
+        ->addButton(ElementButton::create('Most popular brands')->type('postback')->payload('Most popular brands'))
+        ->addButton(ElementButton::create('Mooiest autos')->type('postback')->payload('expensive'))
+        ->addButton(ElementButton::create('Goedkoope autos')->type('postback')->payload('cheapest'))
     );
 });
 
@@ -35,6 +45,57 @@ $botman->hears('problem', function($bot){
 // Can you add [xxx] as a filter?
 
 });
+
+
+$botman->hears('expensive', function($bot){
+    $bot->reply(GenericTemplate::create()
+        ->addImageAspectRatio(GenericTemplate::RATIO_SQUARE)
+        ->addElements([
+            Element::create('Ferrari')
+                ->subtitle('Zoek Ferrari occasions')
+                ->image('http://static.corporate.ferrari.com/sites/ferrari15ipo/files/image-gallery/150069_car1.jpg')
+                ->addButton(ElementButton::create('Ferraris on Gaspedaal')->url('https://beta.gaspedaal.nl/ferrari/')),
+            Element::create('Porsche')
+                ->subtitle('Zoek Porsche occasions')
+                ->image('http://buyersguide.caranddriver.com/media/assets/submodel/7025.jpg')
+                ->addButton(ElementButton::create('Porches on Gaspedaal')
+                    ->url('https://beta.gaspedaal.nl/porsche/')
+                ),
+            Element::create('Mercedes-Benz')
+                ->subtitle('Zoek Mercedes-Benz occasions')
+                ->image('https://www.mercedes-benz.com/wp-content/uploads/sites/3/2015/08/00-mercedes-benz-vehicles-c-class-mercedes-amg-c-63-s-coupe-c-205-1280x686-1280x686.jpg')
+                ->addButton(ElementButton::create('Mercedes-Benz on Gaspedaal')
+                    ->url('https://beta.gaspedaal.nl/Mercedes-Benz/')
+                )
+        ])
+    );
+});
+
+$botman->hears('cheapest', function($bot){
+    $bot->reply(GenericTemplate::create()
+        ->addImageAspectRatio(GenericTemplate::RATIO_SQUARE)
+        ->addElements([
+            Element::create('Renault')
+                ->subtitle('Zoek Renault occasions')
+                ->image('https://group.renault.com/wp-content/uploads/2014/08/Renault.jpg')
+                ->addButton(ElementButton::create('Renaults on Gaspedaal')->url('https://beta.gaspedaal.nl/Renault/')),
+            Element::create('Ford')
+                ->subtitle('Zoek Ford occasions')
+                ->image('https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/2014_Ford_Fiesta_1.5L_Sport_in_Cyberjaya%2C_Malaysia_%2801%29.jpg/1200px-2014_Ford_Fiesta_1.5L_Sport_in_Cyberjaya%2C_Malaysia_%2801%29.jpg')
+                ->addButton(ElementButton::create('Fords on Gaspedaal')
+                    ->url('https://beta.gaspedaal.nl/ford/')
+                ),
+            Element::create('Opel')
+                ->subtitle('Zoek Opel occasions')
+                ->image('https://www.automotions.nl/sites/all/files/media/images/opel-ampera-e-299270.jpg')
+                ->addButton(ElementButton::create('Opels on Gaspedaal')
+                    ->url('https://beta.gaspedaal.nl/opel/')
+                )
+        ])
+    );
+});
+
+
 
 $botman->hears('no car', function($bot){
     $bot->reply('jammer voor jouw!');
@@ -89,7 +150,21 @@ $botman->hears('dealer', function($bot){
     $bot->reply(ButtonTemplate::create('What would you like to do?')
         ->addButton(ElementButton::create('View my invoices')->type('postback')->payload('invoice'))
         ->addButton(ElementButton::create('View my occasions')->url('https://beta.gaspedaal.nl/mijn-aanbod'))
+//        ->addButton(ElementButton::create('Video of a penguin')->type('postback')->payload('video'))
     );
+});
+
+$botman->hears('video', function($bot){
+    $attachment = new Video('https://media.giphy.com/media/VkMV9TldsPd28/giphy.gif', [
+        'custom_payload' => true,
+    ]);
+
+// Build message object
+    $message = OutgoingMessage::create('Awww, penguins!!')
+        ->withAttachment($attachment);
+
+// Reply message object
+    $bot->reply($message);
 });
 
 $botman->hears('invoice', function($bot){
